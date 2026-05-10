@@ -1,0 +1,105 @@
+# Python 3.11+ tomllib built-in, no extra deps needed
+
+[proxy]
+# listen_host     = "0.0.0.0"
+listen_port     = 4001
+# session_store   = "/var/lib/llmrp/sessions.json"
+request_timeout = 120    # seconds, upstream forwarding timeout
+
+# ── Models ────────────────────────────────────────────────────────────
+# [[models]]            → one logical model name clients send
+# [[models.providers]]  → one or more upstream providers for that model
+# hash(session) % total_weight → sticky provider, picked once, forever
+
+[[models]]
+name = "claude-sonnet-4-5"
+
+  [[models.providers]]
+  name    = "anthropic-direct"
+  base_url = "https://api.anthropic.com"
+  api_key = "env:ANTHROPIC_API_KEY"
+  weight  = 1
+
+  [[models.providers]]
+  name    = "bedrock-us-east"
+  base_url = "https://bedrock-runtime.us-east-1.amazonaws.com"
+  api_key = "env:AWS_API_KEY_EAST"
+  weight  = 1
+
+  [[models.providers]]
+  name    = "bedrock-us-west"
+  base_url = "https://bedrock-runtime.us-west-2.amazonaws.com"
+  api_key = "env:AWS_API_KEY_WEST"
+  weight  = 1
+
+  [[models.providers]]
+  name    = "openrouter"
+  base_url = "https://openrouter.ai/api/v1"
+  api_key = "env:OPENROUTER_API_KEY"
+  weight  = 1
+
+[[models]]
+name = "claude-haiku-3-5"
+
+  [[models.providers]]
+  name    = "anthropic-direct"
+  base_url = "https://api.anthropic.com"
+  api_key = "env:ANTHROPIC_API_KEY"
+  weight  = 1
+
+  [[models.providers]]
+  name    = "openrouter"
+  base_url = "https://openrouter.ai/api/v1"
+  api_key = "env:OPENROUTER_API_KEY"
+  weight  = 1
+
+[[models]]
+name = "gpt-4o"
+
+  [[models.providers]]
+  name    = "openai-direct"
+  base_url = "https://api.openai.com"
+  api_key = "env:OPENAI_API_KEY"
+  weight  = 2
+
+  [[models.providers]]
+  name    = "azure-eastus"
+  base_url = "https://my-instance.openai.azure.com"
+  api_key = "env:AZURE_API_KEY"
+  weight  = 1
+
+  [[models.providers]]
+  name    = "openrouter"
+  base_url = "https://openrouter.ai/api/v1"
+  api_key = "env:OPENROUTER_API_KEY"
+  weight  = 1
+
+[[models]]
+name = "deepseek-v4-flash"
+
+  [[models.providers]]
+  name    = "deepseek-direct"
+  base_url = "https://api.deepseek.com"
+  api_key = "env:DEEPSEEK_API_KEY"
+  weight  = 1
+
+  [[models.providers]]
+  name    = "dashscope-compatible"
+  base_url = "https://dashscope.aliyuncs.com/compatible-mode/v1/"
+  api_key = "env:DASHSCOPE_API_KEY"
+  weight  = 1
+
+[[models]]
+name = "deepseek-v4-pro"
+
+  [[models.providers]]
+  name    = "deepseek-direct"
+  base_url = "https://api.deepseek.com"
+  api_key = "env:DEEPSEEK_API_KEY"
+  weight  = 1
+
+  [[models.providers]]
+  name    = "dashscope-compatible"
+  base_url = "https://dashscope.aliyuncs.com/compatible-mode/v1/"
+  api_key = "env:DASHSCOPE_API_KEY"
+  weight  = 1
