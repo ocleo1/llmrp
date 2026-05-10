@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+  <dict>
+    <key>Label</key>
+    <string>llmrp.daemon</string>
+
+    <key>RunAtLoad</key>
+    <true/>
+
+    <key>KeepAlive</key>
+    <dict>
+      <key>SuccessfulExit</key>
+      <false/>
+    </dict>
+
+    <key>ProcessType</key>
+    <string>Background</string>
+
+    <key>UserName</key>
+    <string>wanpyc</string>
+
+    <key>WorkingDirectory</key>
+    <string>/path/to/llmrp</string>
+
+    <key>ProgramArguments</key>
+    <array>
+      <string>/path/to/llmrp/.venv/bin/python</string>
+      <string>/path/to/llmrp/server.py</string>
+    </array>
+
+    <key>EnvironmentVariables</key>
+    <dict>
+      <key>PATH</key>
+      <string>/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/usr/local/sbin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+      <key>PYTHONUNBUFFERED</key>
+      <string>1</string>
+      <key>llmrp_CONFIG</key>
+      <string>/path/to/llmrp/config.toml</string>
+    </dict>
+
+    <key>StandardOutPath</key>
+    <string>/path/to/llmrp/stdout.log</string>
+    <key>StandardErrorPath</key>
+    <string>/path/to/llmrp/stderr.log</string>
+  </dict>
+</plist>
