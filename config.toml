@@ -89,6 +89,13 @@ name = "deepseek-v4-flash"
   api_key = "env:DASHSCOPE_API_KEY"
   weight  = 1
 
+  # https://cloud.tencent.com/document/product/1823/131382
+  [[models.providers]]
+  name    = "tencentmaas-compatible"
+  base_url = "https://tokenhub.tencentmaas.com/v1/"
+  api_key = "env:TENCETMAAS_API_KEY"
+  weight  = 1
+
 [[models]]
 name = "deepseek-v4-pro"
 
@@ -102,4 +109,11 @@ name = "deepseek-v4-pro"
   name    = "dashscope-compatible"
   base_url = "https://dashscope.aliyuncs.com/compatible-mode/v1/"
   api_key = "env:DASHSCOPE_API_KEY"
+  weight  = 1
+
+  # https://cloud.tencent.com/document/product/1823/131382
+  [[models.providers]]
+  name    = "tencentmaas-compatible"
+  base_url = "https://tokenhub.tencentmaas.com/v1/"
+  api_key = "env:TENCETMAAS_API_KEY"
   weight  = 1

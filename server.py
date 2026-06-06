@@ -164,7 +164,9 @@ async def proxy_messages(request: Request):
 async def proxy_chat(request: Request):
     """OpenAI-compatible /v1/chat/completions endpoint."""
     log.debug("Request URL: %s", str(request.url))
+    log.debug("Request method: %s", request.method)
     log.debug("Request headers: %s", dict(request.headers))
+    log.debug("Request body: %s", await request.body())
     return await _proxy(request, "/chat/completions")
 
 async def _proxy(request: Request, path: str):
