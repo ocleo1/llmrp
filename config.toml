@@ -96,6 +96,13 @@ name = "deepseek-v4-flash"
   api_key = "env:TENCETMAAS_API_KEY"
   weight  = 1
 
+  # https://console.onethingai.com/modelApi/list/detail/deepseek-v4-flash
+  [[models.providers]]
+  name    = "onethingai-compatible"
+  base_url = "https://api-model.onethingai.com/v2/openai/"
+  api_key = "env:ONETHINGAI_API_KEY"
+  weight  = 1
+
 [[models]]
 name = "deepseek-v4-pro"
 
@@ -116,4 +123,11 @@ name = "deepseek-v4-pro"
   name    = "tencentmaas-compatible"
   base_url = "https://tokenhub.tencentmaas.com/v1/"
   api_key = "env:TENCETMAAS_API_KEY"
+  weight  = 1
+
+  # https://console.onethingai.com/modelApi/list/detail/deepseek-v4-pro
+  [[models.providers]]
+  name    = "onethingai-compatible"
+  base_url = "https://api-model.onethingai.com/v2/openai/"
+  api_key = "env:ONETHINGAI_API_KEY"
   weight  = 1
