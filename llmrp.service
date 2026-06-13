@@ -1,0 +1,21 @@
+[Unit]
+Description=llmrp service
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=llmrp
+Group=llmrp
+WorkingDirectory=/path/to/llmrp
+ExecStart=/path/to/llmrp/.venv/bin/python server.py
+Restart=on-failure
+RestartSec=2
+Environment=PYTHONUNBUFFERED=1
+Environment=llmrp_CONFIG=/path/to/llmrp/config.toml
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=llmrp
+
+[Install]
+WantedBy=multi-user.target
