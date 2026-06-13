@@ -206,17 +206,60 @@ async def _proxy(request: Request, path: str):
 
     stream = body.get("stream", False)
 
-    if stream:
-        async def _stream_gen():
-            async with httpx.AsyncClient(timeout=REQUEST_TIMEOUT) as client:
-                async with client.stream("POST", target_url, headers=headers, json=body) as resp:
-                    async for chunk in resp.aiter_bytes():
+    try:
+        if stream:
+            client = httpx.AsyncClient(timeout=REQUEST_TIMEOUT)
+            stream_ctx = client.stream("POST", target_url, headers=headers, json=body)
+
+            try:
+                upstream_resp = await stream_ctx.__aenter__()
+            except httpx.TimeoutException:
+                await client.aclose()
+                log.warning("Upstream stream setup timed out: path=%s model=%s provider=%s", path, model, provider["name"])
+                raise HTTPException(status_code=504, detail="Upstream request timed out")
+            except httpx.RequestError:
+                await client.aclose()
+                log.exception("Upstream stream setup connection error: path=%s model=%s provider=%s", path, model, provider["name"])
+                raise HTTPException(status_code=502, detail="Upstream connection error")
+
+            async def _stream_gen():
+                try:
+                    async for chunk in upstream_resp.aiter_bytes():
                         yield chunk
-        return StreamingResponse(_stream_gen(), media_type="text/event-stream")
-    else:
+                except httpx.TimeoutException:
+                    log.warning("Upstream stream timed out during read: path=%s model=%s provider=%s", path, model, provider["name"])
+                    yield b'data: {"error":{"message":"Upstream stream timed out"}}\n\n'
+                except httpx.RequestError:
+                    log.exception("Upstream stream connection error during read: path=%s model=%s provider=%s", path, model, provider["name"])
+                    yield b'data: {"error":{"message":"Upstream stream connection error"}}\n\n'
+                finally:
+                    await stream_ctx.__aexit__(None, None, None)
+                    await client.aclose()
+
+            return StreamingResponse(
+                _stream_gen(),
+                media_type="text/event-stream",
+                status_code=upstream_resp.status_code,
+            )
+
         async with httpx.AsyncClient(timeout=REQUEST_TIMEOUT) as client:
             resp = await client.post(target_url, headers=headers, json=body)
-            return JSONResponse(status_code=resp.status_code, content=resp.json())
+        try:
+            content = resp.json()
+        except Exception:
+            raise HTTPException(
+                status_code=502,
+                detail=f"Upstream returned non-JSON response (status {resp.status_code})",
+            )
+        return JSONResponse(status_code=resp.status_code, content=content)
+    except HTTPException:
+        raise
+    except httpx.TimeoutException:
+        log.warning("Upstream request timed out: path=%s model=%s provider=%s", path, model, provider["name"])
+        raise HTTPException(status_code=504, detail="Upstream request timed out")
+    except httpx.RequestError:
+        log.exception("Upstream connection error: path=%s model=%s provider=%s", path, model, provider["name"])
+        raise HTTPException(status_code=502, detail="Upstream connection error")
 
 # ── Entrypoint ────────────────────────────────────────────────────────
 if __name__ == "__main__":
