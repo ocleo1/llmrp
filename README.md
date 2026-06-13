@@ -9,6 +9,20 @@ pip install -r requirements.txt
 python server.py
 ```
 
+## Testing
+
+Run all tests:
+
+```sh
+python3 -m pytest -q
+```
+
+Run a specific test module:
+
+```sh
+python3 -m pytest -q tests/test_integration.py
+```
+
 ## Daemon Mode
 
 ### MacOS

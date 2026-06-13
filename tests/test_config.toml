@@ -1,0 +1,25 @@
+[proxy]
+listen_port     = 4001
+request_timeout = 120
+session_store   = "/tmp/llmrp_test_sessions.json"
+
+[[models]]
+name = "test-model"
+
+  [[models.providers]]
+  name     = "p-a"
+  base_url = "https://a.example.com"
+  api_key  = "env:TEST_KEY_A"
+  weight   = 1
+
+  [[models.providers]]
+  name     = "p-b"
+  base_url = "https://b.example.com"
+  api_key  = "env:TEST_KEY_B"
+  weight   = 1
+
+  [[models.providers]]
+  name     = "p-c"
+  base_url = "https://c.example.com"
+  api_key  = "env:TEST_KEY_C"
+  weight   = 1
