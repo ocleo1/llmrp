@@ -48,20 +48,23 @@ MODELS: dict[str, list[dict]] = {
     for m in _cfg["models"]
 }
 
-def _resolve_api_key(raw: str) -> str:
-    """Resolve 'env:VAR_NAME' → actual value from environment."""
+def _resolve_api_key(raw: str) -> str | None:
+    """Resolve 'env:VAR_NAME' → actual value from environment, or None if unset."""
     if raw.startswith("env:"):
         var = raw[4:]
         val = os.getenv(var)
         if not val:
-            raise RuntimeError(f"Environment variable '{var}' is not set")
+            return None
         return val
     return raw
 
-# Pre-resolve all API keys at startup — fail fast if any are missing
+# Pre-resolve all API keys at startup — providers with missing env vars are skipped at pick time
 for _model_name, _providers in MODELS.items():
     for _p in _providers:
         _p["_api_key"] = _resolve_api_key(_p["api_key"])
+        if _p["_api_key"] is None:
+            log.warning("Provider '%s' for model '%s': env var '%s' is not set — will be skipped",
+                        _p["name"], _model_name, _p["api_key"][4:])
 
 log.info("Loaded %d model(s): %s", len(MODELS), list(MODELS.keys()))
 
@@ -111,15 +114,17 @@ def _pick_provider(session_id: str, model: str) -> dict:
     if store_key in _session_map:
         provider_name = _session_map[store_key]
         providers = MODELS[model]
-        provider = next((p for p in providers if p["name"] == provider_name), None)
+        provider = next((p for p in providers if p["name"] == provider_name and p["_api_key"]), None)
         if provider:
             log.debug("Session hit  %s → %s", store_key, provider_name)
             return provider
-        # Provider was removed from config — re-pick
-        log.warning("Provider '%s' no longer in config, re-picking", provider_name)
+        # Provider was removed from config or has no API key — re-pick
+        log.warning("Provider '%s' no longer available, re-picking", provider_name)
 
-    # Weighted pick: build slots list
-    providers = MODELS[model]
+    # Weighted pick: build slots list — only include providers with a resolved API key
+    providers = [p for p in MODELS[model] if p["_api_key"]]
+    if not providers:
+        raise HTTPException(status_code=503, detail=f"No available providers for model '{model}'")
     slots: list[str] = []
     for p in providers:
         slots.extend([p["name"]] * int(p.get("weight", 1)))
